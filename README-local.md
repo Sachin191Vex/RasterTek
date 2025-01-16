@@ -23,9 +23,10 @@ Here are screenshots of the `Engine` directory and its project structure:
 1. Copy the contents of the `Engine` directory, including the `*.sln` file and project files (`*.proj*`), into the tutorial directory.  
 2. Unzip the updated code files into a temporary directory.  
 3. Remove `graphicsclass.cpp` and `graphicsclass.h` files.  
-4. Copy all `*.cpp` and `*.h` files into the tutorial directory.  
+4. Copy all `*.cpp`, `*.h` and `*.ps` files into the tutorial directory.
 5. Add the `*.cpp` files to the **Source Files** section and the `*.h` files to the **Header Files** section in the solution.  
-6. Compile the project and ensure it runs correctly.  
+6. Copy resource files (*.tga, *.txt) from unzipped 'data' direcrory to 'data' directory.
+7. Compile the project and ensure it runs correctly.
    - If it fails to run, check for missing resources in the `data` directory.  
-7. Compile the **Release** build and run it from the command line in the `Tutorial/x64` directory.  
-8. Make a **Git commit**.
+8. Compile the **Release** build and run it from the command line in the `Tutorial/x64` directory.
+9. Make a **Git commit**.
