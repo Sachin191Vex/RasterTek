@@ -9,7 +9,8 @@
 // INCLUDES //
 //////////////
 #include <d3d11.h>
-#include <d3dx10math.h>
+#include <directxmath.h>
+using namespace DirectX;
 
 
 ///////////////////////
@@ -26,9 +27,9 @@ class ModelClass
 private:
 	struct VertexType
 	{
-		D3DXVECTOR3 position;
-	    D3DXVECTOR2 texture;
-		D3DXVECTOR3 normal;
+		XMFLOAT3 position;
+		XMFLOAT2 texture;
+		XMFLOAT3 normal;
 	};
 
 public:
@@ -36,20 +37,19 @@ public:
 	ModelClass(const ModelClass&);
 	~ModelClass();
 
-	bool Initialize(ID3D11Device*, WCHAR*);
+	bool Initialize(ID3D11Device*, ID3D11DeviceContext*, char*);
 	void Shutdown();
 	void Render(ID3D11DeviceContext*);
 
 	int GetIndexCount();
 	ID3D11ShaderResourceView* GetTexture();
 
-
 private:
 	bool InitializeBuffers(ID3D11Device*);
 	void ShutdownBuffers();
 	void RenderBuffers(ID3D11DeviceContext*);
 
-	bool LoadTexture(ID3D11Device*, WCHAR*);
+	bool LoadTexture(ID3D11Device*, ID3D11DeviceContext*, char*);
 	void ReleaseTexture();
 
 private:
