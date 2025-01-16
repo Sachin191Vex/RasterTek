@@ -6,8 +6,8 @@
 /////////////
 // GLOBALS //
 /////////////
-Texture2D shaderTexture;
-SamplerState SampleType;
+Texture2D shaderTexture : register(t0);
+SamplerState SampleType : register(s0);
 
 cbuffer LightBuffer
 {
@@ -52,7 +52,7 @@ float4 LightPixelShader(PixelInputType input) : SV_TARGET
     color = saturate(diffuseColor * lightIntensity);
 
     // Multiply the texture pixel and the final diffuse color to get the final pixel color result.
-    color = color * textureColor;
+	color = color * textureColor;
 
-    return color;
+	return color;
 }
