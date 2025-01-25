@@ -240,3 +240,15 @@ void InputClass::GetMouseLocation(int& mouseX, int& mouseY)
 	mouseY = m_mouseY;
 	return;
 }
+
+
+bool InputClass::IsMousePressed()
+{
+	// Check the left mouse button state.
+	if(m_mouseState.rgbButtons[0] & 0x80)
+	{
+		return true;
+	}
+
+	return false;
+}

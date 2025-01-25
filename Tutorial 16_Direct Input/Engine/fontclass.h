@@ -8,9 +8,9 @@
 //////////////
 // INCLUDES //
 //////////////
-#include <d3d11.h>
-#include <d3dx10math.h>
+#include <directxmath.h>
 #include <fstream>
+using namespace DirectX;
 using namespace std;
 
 
@@ -34,8 +34,8 @@ private:
 
 	struct VertexType
 	{
-		D3DXVECTOR3 position;
-	    D3DXVECTOR2 texture;
+		XMFLOAT3 position;
+	    XMFLOAT2 texture;
 	};
 
 public:
@@ -43,22 +43,26 @@ public:
 	FontClass(const FontClass&);
 	~FontClass();
 
-	bool Initialize(ID3D11Device*, char*, WCHAR*);
+	bool Initialize(ID3D11Device*, ID3D11DeviceContext*, int);
 	void Shutdown();
 
 	ID3D11ShaderResourceView* GetTexture();
 
 	void BuildVertexArray(void*, char*, float, float);
+	int GetSentencePixelLength(char*);
+    int GetFontHeight();
 
 private:
 	bool LoadFontData(char*);
 	void ReleaseFontData();
-	bool LoadTexture(ID3D11Device*, WCHAR*);
+	bool LoadTexture(ID3D11Device*, ID3D11DeviceContext*, char*);
 	void ReleaseTexture();
 
 private:
 	FontType* m_Font;
 	TextureClass* m_Texture;
+	float m_fontHeight;
+	int m_spaceSize;
 };
 
 #endif

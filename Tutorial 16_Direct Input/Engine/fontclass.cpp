@@ -21,10 +21,33 @@ FontClass::~FontClass()
 }
 
 
-bool FontClass::Initialize(ID3D11Device* device, char* fontFilename, WCHAR* textureFilename)
+bool FontClass::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext, int fontChoice)
 {
+	char fontFilename[128];
+    char fontTextureFilename[128];
 	bool result;
 
+
+	// Choose one of the available fonts, and default to the first font otherwise.
+    switch(fontChoice)
+    {
+        case 0:
+        {
+            strcpy_s(fontFilename, "../Engine/data/font/font01.txt");
+            strcpy_s(fontTextureFilename, "../Engine/data/font/font01.tga");
+            m_fontHeight = 32.0f;
+            m_spaceSize = 3;
+            break;
+        }
+        default:
+        {
+            strcpy_s(fontFilename, "../Engine/data/font/font01.txt");
+            strcpy_s(fontTextureFilename, "../Engine/data/font/font01.tga");
+            m_fontHeight = 32.0f;
+            m_spaceSize = 3;
+            break;
+        }
+    }
 
 	// Load in the text file containing the font data.
 	result = LoadFontData(fontFilename);
@@ -34,7 +57,7 @@ bool FontClass::Initialize(ID3D11Device* device, char* fontFilename, WCHAR* text
 	}
 
 	// Load the texture that has the font characters on it.
-	result = LoadTexture(device, textureFilename);
+	result = LoadTexture(device, deviceContext, fontTextureFilename);
 	if(!result)
 	{
 		return false;
@@ -65,10 +88,6 @@ bool FontClass::LoadFontData(char* filename)
 
 	// Create the font spacing buffer.
 	m_Font = new FontType[95];
-	if(!m_Font)
-	{
-		return false;
-	}
 
 	// Read in the font size and spacing between chars.
 	fin.open(filename);
@@ -116,20 +135,15 @@ void FontClass::ReleaseFontData()
 }
 
 
-bool FontClass::LoadTexture(ID3D11Device* device, WCHAR* filename)
+bool FontClass::LoadTexture(ID3D11Device* device, ID3D11DeviceContext* deviceContext, char* filename)
 {
 	bool result;
 
 
-	// Create the texture object.
+	// Create and initialize the font texture object.
 	m_Texture = new TextureClass;
-	if(!m_Texture)
-	{
-		return false;
-	}
 
-	// Initialize the texture object.
-	result = m_Texture->Initialize(device, filename);
+	result = m_Texture->Initialize(device, deviceContext, filename);
 	if(!result)
 	{
 		return false;
@@ -182,34 +196,34 @@ void FontClass::BuildVertexArray(void* vertices, char* sentence, float drawX, fl
 		// If the letter is a space then just move over three pixels.
 		if(letter == 0)
 		{
-			drawX = drawX + 3.0f;
+			drawX = drawX + m_spaceSize;
 		}
 		else
 		{
 			// First triangle in quad.
-			vertexPtr[index].position = D3DXVECTOR3(drawX, drawY, 0.0f);  // Top left.
-			vertexPtr[index].texture = D3DXVECTOR2(m_Font[letter].left, 0.0f);
+			vertexPtr[index].position = XMFLOAT3(drawX, drawY, 0.0f);  // Top left.
+			vertexPtr[index].texture = XMFLOAT2(m_Font[letter].left, 0.0f);
 			index++;
 
-			vertexPtr[index].position = D3DXVECTOR3((drawX + m_Font[letter].size), (drawY - 16), 0.0f);  // Bottom right.
-			vertexPtr[index].texture = D3DXVECTOR2(m_Font[letter].right, 1.0f);
+			vertexPtr[index].position = XMFLOAT3((drawX + m_Font[letter].size), (drawY - m_fontHeight), 0.0f);  // Bottom right.
+			vertexPtr[index].texture = XMFLOAT2(m_Font[letter].right, 1.0f);
 			index++;
 
-			vertexPtr[index].position = D3DXVECTOR3(drawX, (drawY - 16), 0.0f);  // Bottom left.
-			vertexPtr[index].texture = D3DXVECTOR2(m_Font[letter].left, 1.0f);
+			vertexPtr[index].position = XMFLOAT3(drawX, (drawY - m_fontHeight), 0.0f);  // Bottom left.
+			vertexPtr[index].texture = XMFLOAT2(m_Font[letter].left, 1.0f);
 			index++;
 
 			// Second triangle in quad.
-			vertexPtr[index].position = D3DXVECTOR3(drawX, drawY, 0.0f);  // Top left.
-			vertexPtr[index].texture = D3DXVECTOR2(m_Font[letter].left, 0.0f);
+			vertexPtr[index].position = XMFLOAT3(drawX, drawY, 0.0f);  // Top left.
+			vertexPtr[index].texture = XMFLOAT2(m_Font[letter].left, 0.0f);
 			index++;
 
-			vertexPtr[index].position = D3DXVECTOR3(drawX + m_Font[letter].size, drawY, 0.0f);  // Top right.
-			vertexPtr[index].texture = D3DXVECTOR2(m_Font[letter].right, 0.0f);
+			vertexPtr[index].position = XMFLOAT3(drawX + m_Font[letter].size, drawY, 0.0f);  // Top right.
+			vertexPtr[index].texture = XMFLOAT2(m_Font[letter].right, 0.0f);
 			index++;
 
-			vertexPtr[index].position = D3DXVECTOR3((drawX + m_Font[letter].size), (drawY - 16), 0.0f);  // Bottom right.
-			vertexPtr[index].texture = D3DXVECTOR2(m_Font[letter].right, 1.0f);
+			vertexPtr[index].position = XMFLOAT3((drawX + m_Font[letter].size), (drawY - m_fontHeight), 0.0f);  // Bottom right.
+			vertexPtr[index].texture = XMFLOAT2(m_Font[letter].right, 1.0f);
 			index++;
 
 			// Update the x location for drawing by the size of the letter and one pixel.
@@ -218,4 +232,37 @@ void FontClass::BuildVertexArray(void* vertices, char* sentence, float drawX, fl
 	}
 
 	return;
+}
+
+
+int FontClass::GetSentencePixelLength(char* sentence)
+{
+    int pixelLength, numLetters, i, letter;
+
+
+    pixelLength = 0;
+    numLetters = (int)strlen(sentence);
+
+    for(i=0; i<numLetters; i++)
+    {
+        letter = ((int)sentence[i]) - 32;
+
+        // If the letter is a space then count it as three pixels.
+        if(letter == 0)
+        {
+            pixelLength += m_spaceSize;
+        }
+        else
+        {
+            pixelLength += (m_Font[letter].size + 1);
+        }
+    }
+
+    return pixelLength;
+}
+
+
+int FontClass::GetFontHeight()
+{
+    return (int)m_fontHeight;
 }

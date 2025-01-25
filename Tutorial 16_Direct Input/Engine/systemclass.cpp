@@ -7,7 +7,7 @@
 SystemClass::SystemClass()
 {
 	m_Input = 0;
-	m_Graphics = 0;
+	m_Application = 0;
 }
 
 
@@ -34,30 +34,19 @@ bool SystemClass::Initialize()
 	// Initialize the windows api.
 	InitializeWindows(screenWidth, screenHeight);
 
-	// Create the input object.  This object will be used to handle reading the keyboard input from the user.
+	// Create and initialize the input object.  This object will be used to handle reading the keyboard input from the user.
 	m_Input = new InputClass;
-	if(!m_Input)
-	{
-		return false;
-	}
 
-	// Initialize the input object.
 	result = m_Input->Initialize(m_hinstance, m_hwnd, screenWidth, screenHeight);
 	if(!result)
 	{
-		MessageBox(m_hwnd, L"Could not initialize the input object.", L"Error", MB_OK);
 		return false;
 	}
 
-	// Create the graphics object.  This object will handle rendering all the graphics for this application.
-	m_Graphics = new GraphicsClass;
-	if(!m_Graphics)
-	{
-		return false;
-	}
+	// Create and initialize the application class object.  This object will handle rendering all the graphics for this application.
+	m_Application = new ApplicationClass;
 
-	// Initialize the graphics object.
-	result = m_Graphics->Initialize(screenWidth, screenHeight, m_hwnd);
+	result = m_Application->Initialize(screenWidth, screenHeight, m_hwnd);
 	if(!result)
 	{
 		return false;
@@ -69,18 +58,17 @@ bool SystemClass::Initialize()
 
 void SystemClass::Shutdown()
 {
-	// Release the graphics object.
-	if(m_Graphics)
+	// Release the application class object.
+	if(m_Application)
 	{
-		m_Graphics->Shutdown();
-		delete m_Graphics;
-		m_Graphics = 0;
+		m_Application->Shutdown();
+		delete m_Application;
+		m_Application = 0;
 	}
 
 	// Release the input object.
 	if(m_Input)
 	{
-		m_Input->Shutdown();
 		delete m_Input;
 		m_Input = 0;
 	}
@@ -119,19 +107,12 @@ void SystemClass::Run()
 		}
 		else
 		{
-			// Otherwise do the frame processing.  If frame processing fails then exit.
+			// Otherwise do the frame processing.
 			result = Frame();
 			if(!result)
 			{
-				MessageBox(m_hwnd, L"Frame Processing Failed", L"Error", MB_OK);
 				done = true;
 			}
-		}
-
-		// Check if the user pressed escape and wants to quit.
-		if(m_Input->IsEscapePressed() == true)
-		{
-			done = true;
 		}
 	}
 
@@ -142,7 +123,6 @@ void SystemClass::Run()
 bool SystemClass::Frame()
 {
 	bool result;
-	int mouseX, mouseY;
 
 
 	// Do the input frame processing.
@@ -152,18 +132,8 @@ bool SystemClass::Frame()
 		return false;
 	}
 
-	// Get the location of the mouse from the input object,
-	m_Input->GetMouseLocation(mouseX, mouseY);
-
-	// Do the frame processing for the graphics object.
-	result = m_Graphics->Frame(mouseX, mouseY);
-	if(!result)
-	{
-		return false;
-	}
-
-	// Finally render the graphics to the screen.
-	result = m_Graphics->Render();
+	// Do the frame processing for the application class object.
+	result = m_Application->Frame(m_Input);
 	if(!result)
 	{
 		return false;
