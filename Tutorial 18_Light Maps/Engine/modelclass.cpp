@@ -8,8 +8,8 @@ ModelClass::ModelClass()
 {
 	m_vertexBuffer = 0;
 	m_indexBuffer = 0;
+	m_Textures = 0;
 	m_model = 0;
-	m_TextureArray = 0;
 }
 
 
@@ -23,12 +23,12 @@ ModelClass::~ModelClass()
 }
 
 
-bool ModelClass::Initialize(ID3D11Device* device, char* modelFilename, WCHAR* textureFilename1, WCHAR* textureFilename2)
+bool ModelClass::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext, char* modelFilename, char* textureFilename1, char* textureFilename2)
 {
 	bool result;
 
 
-	// Load in the model data,
+	// Load in the model data.
 	result = LoadModel(modelFilename);
 	if(!result)
 	{
@@ -43,7 +43,7 @@ bool ModelClass::Initialize(ID3D11Device* device, char* modelFilename, WCHAR* te
 	}
 
 	// Load the textures for this model.
-	result = LoadTextures(device, textureFilename1, textureFilename2);
+	result = LoadTextures(device, deviceContext, textureFilename1, textureFilename2);
 	if(!result)
 	{
 		return false;
@@ -83,9 +83,9 @@ int ModelClass::GetIndexCount()
 }
 
 
-ID3D11ShaderResourceView** ModelClass::GetTextureArray()
+ID3D11ShaderResourceView* ModelClass::GetTexture(int index)
 {
-	return m_TextureArray->GetTextureArray();
+	return m_Textures[index].GetTexture();
 }
 
 
@@ -94,30 +94,23 @@ bool ModelClass::InitializeBuffers(ID3D11Device* device)
 	VertexType* vertices;
 	unsigned long* indices;
 	D3D11_BUFFER_DESC vertexBufferDesc, indexBufferDesc;
-	D3D11_SUBRESOURCE_DATA vertexData, indexData;
+    D3D11_SUBRESOURCE_DATA vertexData, indexData;
 	HRESULT result;
 	int i;
 
 
 	// Create the vertex array.
 	vertices = new VertexType[m_vertexCount];
-	if(!vertices)
-	{
-		return false;
-	}
 
 	// Create the index array.
 	indices = new unsigned long[m_indexCount];
-	if(!indices)
-	{
-		return false;
-	}
 
 	// Load the vertex array and index array with data.
 	for(i=0; i<m_vertexCount; i++)
 	{
-		vertices[i].position = D3DXVECTOR3(m_model[i].x, m_model[i].y, m_model[i].z);
-		vertices[i].texture = D3DXVECTOR2(m_model[i].tu, m_model[i].tv);
+		vertices[i].position = XMFLOAT3(m_model[i].x, m_model[i].y, m_model[i].z);
+		vertices[i].texture = XMFLOAT2(m_model[i].tu, m_model[i].tv);
+		vertices[i].normal = XMFLOAT3(m_model[i].nx, m_model[i].ny, m_model[i].nz);
 
 		indices[i] = i;
 	}
@@ -216,20 +209,21 @@ void ModelClass::RenderBuffers(ID3D11DeviceContext* deviceContext)
 }
 
 
-bool ModelClass::LoadTextures(ID3D11Device* device, WCHAR* filename1, WCHAR* filename2)
+bool ModelClass::LoadTextures(ID3D11Device* device, ID3D11DeviceContext* deviceContext, char* filename1, char* filename2)
 {
 	bool result;
 
 
-	// Create the texture array object.
-	m_TextureArray = new TextureArrayClass;
-	if(!m_TextureArray)
+	// Create and initialize the texture object array.
+	m_Textures = new TextureClass[2];
+
+	result = m_Textures[0].Initialize(device, deviceContext, filename1);
+	if(!result)
 	{
 		return false;
 	}
 
-	// Initialize the texture array object.
-	result = m_TextureArray->Initialize(device, filename1, filename2);
+	result = m_Textures[1].Initialize(device, deviceContext, filename2);
 	if(!result)
 	{
 		return false;
@@ -241,12 +235,14 @@ bool ModelClass::LoadTextures(ID3D11Device* device, WCHAR* filename1, WCHAR* fil
 
 void ModelClass::ReleaseTextures()
 {
-	// Release the texture array object.
-	if(m_TextureArray)
+	// Release the texture object array.
+	if(m_Textures)
 	{
-		m_TextureArray->Shutdown();
-		delete m_TextureArray;
-		m_TextureArray = 0;
+		m_Textures[0].Shutdown();
+		m_Textures[1].Shutdown();
+
+		delete [] m_Textures;
+		m_Textures = 0;
 	}
 
 	return;
@@ -260,8 +256,10 @@ bool ModelClass::LoadModel(char* filename)
 	int i;
 
 
-	// Open the model file.  If it could not open the file then exit.
+	// Open the model file.
 	fin.open(filename);
+
+	// If it could not open the file then exit.
 	if(fin.fail())
 	{
 		return false;
@@ -269,7 +267,7 @@ bool ModelClass::LoadModel(char* filename)
 
 	// Read up to the value of vertex count.
 	fin.get(input);
-	while(input != ':')
+	while (input != ':')
 	{
 		fin.get(input);
 	}
@@ -282,14 +280,10 @@ bool ModelClass::LoadModel(char* filename)
 
 	// Create the model using the vertex count that was read in.
 	m_model = new ModelType[m_vertexCount];
-	if(!m_model)
-	{
-		return false;
-	}
 
 	// Read up to the beginning of the data.
 	fin.get(input);
-	while(input != ':')
+	while (input != ':')
 	{
 		fin.get(input);
 	}

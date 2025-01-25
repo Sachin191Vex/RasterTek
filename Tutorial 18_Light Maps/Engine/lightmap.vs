@@ -21,6 +21,7 @@ struct VertexInputType
 {
     float4 position : POSITION;
     float2 tex : TEXCOORD0;
+	float3 normal : NORMAL;
 };
 
 struct PixelInputType
@@ -47,7 +48,7 @@ PixelInputType LightMapVertexShader(VertexInputType input)
     output.position = mul(output.position, projectionMatrix);
     
 	// Store the texture coordinates for the pixel shader.
-	output.tex = input.tex;
+    output.tex = input.tex;
     
     return output;
 }
