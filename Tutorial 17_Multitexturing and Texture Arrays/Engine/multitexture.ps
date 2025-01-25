@@ -6,8 +6,9 @@
 /////////////
 // GLOBALS //
 /////////////
-Texture2D shaderTextures[2];
-SamplerState SampleType;
+Texture2D shaderTexture1 : register(t0);
+Texture2D shaderTexture2 : register(t1);
+SamplerState SampleType : register(s0);
 
 
 //////////////
@@ -26,20 +27,18 @@ struct PixelInputType
 float4 MultiTexturePixelShader(PixelInputType input) : SV_TARGET
 {
 	float4 color1;
-    float4 color2;
-    float4 blendColor;
-
-
-    // Get the pixel color from the first texture.
-    color1 = shaderTextures[0].Sample(SampleType, input.tex);
-
-    // Get the pixel color from the second texture.
-    color2 = shaderTextures[1].Sample(SampleType, input.tex);
-
-    // Blend the two pixels together and multiply by the gamma value.
+	float4 color2;
+	float4 blendColor;
+	 
+	
+	// Sample the pixel color from the textures using the sampler at this texture coordinate location.
+	color1 = shaderTexture1.Sample(SampleType, input.tex);
+	color2 = shaderTexture2.Sample(SampleType, input.tex);
+	
+	// Combine the two textures together.
     blendColor = color1 * color2 * 2.0;
-    
-    // Saturate the final color.
+
+	// Saturate the final color.
     blendColor = saturate(blendColor);
 
     return blendColor;
