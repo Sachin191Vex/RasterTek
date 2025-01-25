@@ -8,7 +8,8 @@
 //////////////
 // INCLUDES //
 //////////////
-#include <d3dx10math.h>
+#include <directxmath.h>
+using namespace DirectX;
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -23,22 +24,25 @@ public:
 
 	void SetAmbientColor(float, float, float, float);
 	void SetDiffuseColor(float, float, float, float);
+	void SetDirection(float, float, float);
 	void SetSpecularColor(float, float, float, float);
 	void SetSpecularPower(float);
-	void SetDirection(float, float, float);
+	void SetPosition(float, float, float);
 
-	D3DXVECTOR4 GetAmbientColor();
-	D3DXVECTOR4 GetDiffuseColor();
-	D3DXVECTOR4 GetSpecularColor();
+	XMFLOAT4 GetAmbientColor();
+	XMFLOAT4 GetDiffuseColor();
+	XMFLOAT3 GetDirection();
+	XMFLOAT4 GetSpecularColor();
 	float GetSpecularPower();
-	D3DXVECTOR3 GetDirection();
+	XMFLOAT4 GetPosition();
 
 private:
-	D3DXVECTOR4 m_ambientColor;
-	D3DXVECTOR4 m_diffuseColor;
-	D3DXVECTOR4 m_specularColor;
+	XMFLOAT4 m_ambientColor;
+	XMFLOAT4 m_diffuseColor;
+	XMFLOAT3 m_direction;
+	XMFLOAT4 m_specularColor;
 	float m_specularPower;
-	D3DXVECTOR3 m_direction;
+	XMFLOAT4 m_position;
 };
 
 #endif

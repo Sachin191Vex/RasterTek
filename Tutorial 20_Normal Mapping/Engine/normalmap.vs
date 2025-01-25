@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////////
-// Filename: bumpmap.vs
+// Filename: normalmap.vs
 ////////////////////////////////////////////////////////////////////////////////
 
 
@@ -23,23 +23,23 @@ struct VertexInputType
     float2 tex : TEXCOORD0;
 	float3 normal : NORMAL;
 	float3 tangent : TANGENT;
-	float3 binormal : BINORMAL;
+    float3 binormal : BINORMAL;
 };
 
 struct PixelInputType
 {
     float4 position : SV_POSITION;
     float2 tex : TEXCOORD0;
-   	float3 normal : NORMAL;
-	float3 tangent : TANGENT;
-	float3 binormal : BINORMAL;
+	float3 normal : NORMAL;
+    float3 tangent : TANGENT;
+    float3 binormal : BINORMAL;
 };
 
 
 ////////////////////////////////////////////////////////////////////////////////
 // Vertex Shader
 ////////////////////////////////////////////////////////////////////////////////
-PixelInputType BumpMapVertexShader(VertexInputType input)
+PixelInputType NormalMapVertexShader(VertexInputType input)
 {
     PixelInputType output;
     
@@ -53,13 +53,13 @@ PixelInputType BumpMapVertexShader(VertexInputType input)
     output.position = mul(output.position, projectionMatrix);
     
 	// Store the texture coordinates for the pixel shader.
-	output.tex = input.tex;
+    output.tex = input.tex;
     
-    // Calculate the normal vector against the world matrix only and then normalize the final value.
+	 // Calculate the normal vector against the world matrix only and then normalize the final value.
     output.normal = mul(input.normal, (float3x3)worldMatrix);
     output.normal = normalize(output.normal);
 
-	// Calculate the tangent vector against the world matrix only and then normalize the final value.
+    // Calculate the tangent vector against the world matrix only and then normalize the final value.
     output.tangent = mul(input.tangent, (float3x3)worldMatrix);
     output.tangent = normalize(output.tangent);
 

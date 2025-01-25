@@ -9,15 +9,16 @@
 // INCLUDES //
 //////////////
 #include <d3d11.h>
-#include <d3dx10math.h>
+#include <directxmath.h>
 #include <fstream>
+using namespace DirectX;
 using namespace std;
 
 
 ///////////////////////
 // MY CLASS INCLUDES //
 ///////////////////////
-#include "texturearrayclass.h"
+#include "textureclass.h"
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -28,11 +29,11 @@ class ModelClass
 private:
 	struct VertexType
 	{
-		D3DXVECTOR3 position;
-		D3DXVECTOR2 texture;
-		D3DXVECTOR3 normal;
-		D3DXVECTOR3 tangent;
-		D3DXVECTOR3 binormal;
+		XMFLOAT3 position;
+		XMFLOAT2 texture;
+		XMFLOAT3 normal;
+		XMFLOAT3 tangent;
+		XMFLOAT3 binormal;
 	};
 
 	struct ModelType
@@ -61,33 +62,32 @@ public:
 	ModelClass(const ModelClass&);
 	~ModelClass();
 
-	bool Initialize(ID3D11Device*, char*, WCHAR*, WCHAR*);
+	bool Initialize(ID3D11Device*, ID3D11DeviceContext*, char*, char*, char*);
 	void Shutdown();
 	void Render(ID3D11DeviceContext*);
 
 	int GetIndexCount();
-	ID3D11ShaderResourceView** GetTextureArray();
+	ID3D11ShaderResourceView* GetTexture(int);
 
 private:
 	bool InitializeBuffers(ID3D11Device*);
 	void ShutdownBuffers();
 	void RenderBuffers(ID3D11DeviceContext*);
 
-	bool LoadTextures(ID3D11Device*, WCHAR*, WCHAR*);
+	bool LoadTextures(ID3D11Device*, ID3D11DeviceContext*, char*, char*);
 	void ReleaseTextures();
 
 	bool LoadModel(char*);
 	void ReleaseModel();
 
 	void CalculateModelVectors();
-	void CalculateTangentBinormal(TempVertexType, TempVertexType, TempVertexType, VectorType&, VectorType&);
-	void CalculateNormal(VectorType, VectorType, VectorType&);
+    void CalculateTangentBinormal(TempVertexType, TempVertexType, TempVertexType, VectorType&, VectorType&);
 
 private:
 	ID3D11Buffer *m_vertexBuffer, *m_indexBuffer;
 	int m_vertexCount, m_indexCount;
+	TextureClass* m_Textures;
 	ModelType* m_model;
-	TextureArrayClass* m_TextureArray;
 };
 
 #endif

@@ -56,8 +56,8 @@ bool InputClass::Initialize(HINSTANCE hinstance, HWND hwnd, int screenWidth, int
 		return false;
 	}
 
-	// Set the cooperative level of the keyboard to share with other programs.
-	result = m_keyboard->SetCooperativeLevel(hwnd, DISCL_FOREGROUND | DISCL_NONEXCLUSIVE);
+	// Set the cooperative level of the keyboard to not share with other programs.
+	result = m_keyboard->SetCooperativeLevel(hwnd, DISCL_FOREGROUND | DISCL_EXCLUSIVE);
 	if(FAILED(result))
 	{
 		return false;
@@ -239,4 +239,16 @@ void InputClass::GetMouseLocation(int& mouseX, int& mouseY)
 	mouseX = m_mouseX;
 	mouseY = m_mouseY;
 	return;
+}
+
+
+bool InputClass::IsMousePressed()
+{
+	// Check the left mouse button state.
+	if(m_mouseState.rgbButtons[0] & 0x80)
+	{
+		return true;
+	}
+
+	return false;
 }
