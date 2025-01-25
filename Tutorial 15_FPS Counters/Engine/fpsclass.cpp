@@ -23,7 +23,9 @@ void FpsClass::Initialize()
 {
 	m_fps = 0;
 	m_count = 0;
+
 	m_startTime = timeGetTime();
+
 	return;
 }
 
@@ -39,6 +41,8 @@ void FpsClass::Frame()
 		
 		m_startTime = timeGetTime();
 	}
+
+	return;
 }
 
 

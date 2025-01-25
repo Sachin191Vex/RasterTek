@@ -4,11 +4,11 @@
 #ifndef _TEXTCLASS_H_
 #define _TEXTCLASS_H_
 
+
 ///////////////////////
 // MY CLASS INCLUDES //
 ///////////////////////
 #include "fontclass.h"
-#include "fontshaderclass.h"
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -17,17 +17,10 @@
 class TextClass
 {
 private:
-	struct SentenceType
-	{
-		ID3D11Buffer *vertexBuffer, *indexBuffer;
-		int vertexCount, indexCount, maxLength;
-		float red, green, blue;
-	};
-
 	struct VertexType
 	{
-		D3DXVECTOR3 position;
-	    D3DXVECTOR2 texture;
+		XMFLOAT3 position;
+	    XMFLOAT2 texture;
 	};
 
 public:
@@ -35,26 +28,24 @@ public:
 	TextClass(const TextClass&);
 	~TextClass();
 
-	bool Initialize(ID3D11Device*, ID3D11DeviceContext*, HWND, int, int, D3DXMATRIX);
+	bool Initialize(ID3D11Device*, ID3D11DeviceContext*, int, int, int, FontClass*, char*, int, int, float, float, float);
 	void Shutdown();
-	bool Render(ID3D11DeviceContext*, D3DXMATRIX, D3DXMATRIX);
+	void Render(ID3D11DeviceContext*);
 
-	bool SetFps(int, ID3D11DeviceContext*);
-	bool SetCpu(int, ID3D11DeviceContext*);
+	int GetIndexCount();
 
-private:
-	bool InitializeSentence(SentenceType**, int, ID3D11Device*);
-	bool UpdateSentence(SentenceType*, char*, int, int, float, float, float, ID3D11DeviceContext*);
-	void ReleaseSentence(SentenceType**);
-	bool RenderSentence(ID3D11DeviceContext*, SentenceType*, D3DXMATRIX, D3DXMATRIX);
+	bool UpdateText(ID3D11DeviceContext*, FontClass*, char*, int, int, float, float, float);
+    XMFLOAT4 GetPixelColor();
 
 private:
-	FontClass* m_Font;
-	FontShaderClass* m_FontShader;
-	int m_screenWidth, m_screenHeight;
-	D3DXMATRIX m_baseViewMatrix;
-	SentenceType* m_sentence1;
-	SentenceType* m_sentence2;
+	bool InitializeBuffers(ID3D11Device*, ID3D11DeviceContext*, FontClass*, char*, int, int, float, float, float);
+	void ShutdownBuffers();
+	void RenderBuffers(ID3D11DeviceContext*);
+
+private:
+	ID3D11Buffer *m_vertexBuffer, *m_indexBuffer;
+	int m_screenWidth, m_screenHeight, m_maxLength, m_vertexCount, m_indexCount;
+	XMFLOAT4 m_pixelColor;
 };
 
 #endif

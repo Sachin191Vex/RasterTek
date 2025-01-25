@@ -7,10 +7,7 @@
 SystemClass::SystemClass()
 {
 	m_Input = 0;
-	m_Graphics = 0;
-	m_Fps = 0;
-	m_Cpu = 0;
-	m_Timer = 0;
+	m_Application = 0;
 }
 
 
@@ -37,110 +34,37 @@ bool SystemClass::Initialize()
 	// Initialize the windows api.
 	InitializeWindows(screenWidth, screenHeight);
 
-	// Create the input object.  This object will be used to handle reading the keyboard input from the user.
+	// Create and initialize the input object.  This object will be used to handle reading the keyboard input from the user.
 	m_Input = new InputClass;
-	if(!m_Input)
-	{
-		return false;
-	}
 
-	// Initialize the input object.
-	result = m_Input->Initialize(m_hinstance, m_hwnd, screenWidth, screenHeight);
-	if(!result)
-	{
-		MessageBox(m_hwnd, L"Could not initialize the input object.", L"Error", MB_OK);
-		return false;
-	}
+	m_Input->Initialize();
 
-	// Create the graphics object.  This object will handle rendering all the graphics for this application.
-	m_Graphics = new GraphicsClass;
-	if(!m_Graphics)
-	{
-		return false;
-	}
+	// Create and initialize the application class object.  This object will handle rendering all the graphics for this application.
+	m_Application = new ApplicationClass;
 
-	// Initialize the graphics object.
-	result = m_Graphics->Initialize(screenWidth, screenHeight, m_hwnd);
+	result = m_Application->Initialize(screenWidth, screenHeight, m_hwnd);
 	if(!result)
 	{
 		return false;
 	}
 	
-	// Create the fps object.
-	m_Fps = new FpsClass;
-	if(!m_Fps)
-	{
-		return false;
-	}
-
-	// Initialize the fps object.
-	m_Fps->Initialize();
-
-	// Create the cpu object.
-	m_Cpu = new CpuClass;
-	if(!m_Cpu)
-	{
-		return false;
-	}
-
-	// Initialize the cpu object.
-	m_Cpu->Initialize();
-
-	// Create the timer object.
-	m_Timer = new TimerClass;
-	if(!m_Timer)
-	{
-		return false;
-	}
-
-	// Initialize the timer object.
-	result = m_Timer->Initialize();
-	if(!result)
-	{
-		MessageBox(m_hwnd, L"Could not initialize the Timer object.", L"Error", MB_OK);
-		return false;
-	}
-
 	return true;
 }
 
 
 void SystemClass::Shutdown()
 {
-	// Release the timer object.
-	if(m_Timer)
+	// Release the application class object.
+	if(m_Application)
 	{
-		delete m_Timer;
-		m_Timer = 0;
-	}
-
-	// Release the cpu object.
-	if(m_Cpu)
-	{
-		m_Cpu->Shutdown();
-		delete m_Cpu;
-		m_Cpu = 0;
-	}
-
-	// Release the fps object.
-	if(m_Fps)
-	{
-		delete m_Fps;
-		m_Fps = 0;
-	}
-
-	// Release the graphics object.
-	if(m_Graphics)
-	{
-		m_Graphics->Shutdown();
-		delete m_Graphics;
-		m_Graphics = 0;
+		m_Application->Shutdown();
+		delete m_Application;
+		m_Application = 0;
 	}
 
 	// Release the input object.
 	if(m_Input)
 	{
-		m_Input->Shutdown();
 		delete m_Input;
 		m_Input = 0;
 	}
@@ -179,20 +103,14 @@ void SystemClass::Run()
 		}
 		else
 		{
-			// Otherwise do the frame processing.  If frame processing fails then exit.
+			// Otherwise do the frame processing.
 			result = Frame();
 			if(!result)
 			{
-				MessageBox(m_hwnd, L"Frame Processing Failed", L"Error", MB_OK);
 				done = true;
 			}
 		}
 
-		// Check if the user pressed escape and wants to quit.
-		if(m_Input->IsEscapePressed() == true)
-		{
-			done = true;
-		}
 	}
 
 	return;
@@ -204,27 +122,14 @@ bool SystemClass::Frame()
 	bool result;
 
 
-	// Update the system stats.
-	m_Timer->Frame();
-	m_Fps->Frame();
-	m_Cpu->Frame();
-
-	// Do the input frame processing.
-	result = m_Input->Frame();
-	if(!result)
+	// Check if the user pressed escape and wants to exit the application.
+	if(m_Input->IsKeyDown(VK_ESCAPE))
 	{
 		return false;
 	}
 
-	// Do the frame processing for the graphics object.
-	result = m_Graphics->Frame(m_Fps->GetFps(), m_Cpu->GetCpuPercentage(), m_Timer->GetTime());
-	if(!result)
-	{
-		return false;
-	}
-
-	// Finally render the graphics to the screen.
-	result = m_Graphics->Render();
+	// Do the frame processing for the application class object.
+	result = m_Application->Frame();
 	if(!result)
 	{
 		return false;
@@ -236,7 +141,30 @@ bool SystemClass::Frame()
 
 LRESULT CALLBACK SystemClass::MessageHandler(HWND hwnd, UINT umsg, WPARAM wparam, LPARAM lparam)
 {
-	return DefWindowProc(hwnd, umsg, wparam, lparam);
+	switch(umsg)
+	{
+		// Check if a key has been pressed on the keyboard.
+		case WM_KEYDOWN:
+		{
+			// If a key is pressed send it to the input object so it can record that state.
+			m_Input->KeyDown((unsigned int)wparam);
+			return 0;
+		}
+
+		// Check if a key has been released on the keyboard.
+		case WM_KEYUP:
+		{
+			// If a key is released then send it to the input object so it can unset the state for that key.
+			m_Input->KeyUp((unsigned int)wparam);
+			return 0;
+		}
+
+		// Any other messages send to the default message handler as our application won't make use of them.
+		default:
+		{
+			return DefWindowProc(hwnd, umsg, wparam, lparam);
+		}
+	}
 }
 
 
