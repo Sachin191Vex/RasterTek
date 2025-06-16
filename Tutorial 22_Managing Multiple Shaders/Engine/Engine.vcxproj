@@ -24,11 +24,14 @@
     <ClCompile Include="d3dclass.cpp" />
     <ClCompile Include="inputclass.cpp" />
     <ClCompile Include="lightclass.cpp" />
+    <ClCompile Include="lightshaderclass.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="modelclass.cpp" />
-    <ClCompile Include="specmapshaderclass.cpp" />
+    <ClCompile Include="normalmapshaderclass.cpp" />
+    <ClCompile Include="shadermanagerclass.cpp" />
     <ClCompile Include="systemclass.cpp" />
     <ClCompile Include="textureclass.cpp" />
+    <ClCompile Include="textureshaderclass.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="applicationclass.h" />
@@ -36,10 +39,13 @@
     <ClInclude Include="d3dclass.h" />
     <ClInclude Include="inputclass.h" />
     <ClInclude Include="lightclass.h" />
+    <ClInclude Include="lightshaderclass.h" />
     <ClInclude Include="modelclass.h" />
-    <ClInclude Include="specmapshaderclass.h" />
+    <ClInclude Include="normalmapshaderclass.h" />
+    <ClInclude Include="shadermanagerclass.h" />
     <ClInclude Include="systemclass.h" />
     <ClInclude Include="textureclass.h" />
+    <ClInclude Include="textureshaderclass.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

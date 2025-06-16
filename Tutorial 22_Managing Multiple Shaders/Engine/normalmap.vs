@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////////
-// Filename: specmap.vs
+// Filename: normalmap.vs
 ////////////////////////////////////////////////////////////////////////////////
 
 
@@ -11,12 +11,6 @@ cbuffer MatrixBuffer
 	matrix worldMatrix;
 	matrix viewMatrix;
 	matrix projectionMatrix;
-};
-
-cbuffer CameraBuffer
-{
-    float3 cameraPosition;
-	float padding;
 };
 
 
@@ -39,18 +33,16 @@ struct PixelInputType
 	float3 normal : NORMAL;
     float3 tangent : TANGENT;
     float3 binormal : BINORMAL;
-	float3 viewDirection : TEXCOORD1;
 };
 
 
 ////////////////////////////////////////////////////////////////////////////////
 // Vertex Shader
 ////////////////////////////////////////////////////////////////////////////////
-PixelInputType SpecMapVertexShader(VertexInputType input)
+PixelInputType NormalMapVertexShader(VertexInputType input)
 {
     PixelInputType output;
-    float4 worldPosition;
-
+    
 
 	// Change the position vector to be 4 units for proper matrix calculations.
     input.position.w = 1.0f;
@@ -74,15 +66,6 @@ PixelInputType SpecMapVertexShader(VertexInputType input)
     // Calculate the binormal vector against the world matrix only and then normalize the final value.
     output.binormal = mul(input.binormal, (float3x3)worldMatrix);
     output.binormal = normalize(output.binormal);
-
-	// Calculate the position of the vertex in the world.
-    worldPosition = mul(input.position, worldMatrix);
-
-    // Determine the viewing direction based on the position of the camera and the position of the vertex in the world.
-    output.viewDirection = cameraPosition.xyz - worldPosition.xyz;
-	
-    // Normalize the viewing direction vector.
-    output.viewDirection = normalize(output.viewDirection);
 
     return output;
 }

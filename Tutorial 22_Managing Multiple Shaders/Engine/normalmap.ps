@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////////
-// Filename: specmap.ps
+// Filename: normalmap.ps
 ////////////////////////////////////////////////////////////////////////////////
 
 
@@ -8,15 +8,13 @@
 /////////////
 Texture2D shaderTexture1 : register(t0);
 Texture2D shaderTexture2 : register(t1);
-Texture2D shaderTexture3 : register(t2);
 SamplerState SampleType : register(s0);
 
 cbuffer LightBuffer
 {
     float4 diffuseColor;
-    float4 specularColor;
-    float specularPower;
     float3 lightDirection;
+	float padding;
 };
 
 
@@ -30,14 +28,13 @@ struct PixelInputType
 	float3 normal : NORMAL;
     float3 tangent : TANGENT;
     float3 binormal : BINORMAL;
-	float3 viewDirection : TEXCOORD1;
 };
 
 
 ////////////////////////////////////////////////////////////////////////////////
 // Pixel Shader
 ////////////////////////////////////////////////////////////////////////////////
-float4 SpecMapPixelShader(PixelInputType input) : SV_TARGET
+float4 NormalMapPixelShader(PixelInputType input) : SV_TARGET
 {
 	float4 textureColor;
 	float4 bumpMap;
@@ -45,9 +42,6 @@ float4 SpecMapPixelShader(PixelInputType input) : SV_TARGET
 	float3 lightDir;
 	float lightIntensity;
 	float4 color;
-	float4 specularIntensity;
-    float3 reflection;
-    float4 specular;
 
 	
 	// Sample the pixel color from the color texture at this location.
@@ -76,24 +70,6 @@ float4 SpecMapPixelShader(PixelInputType input) : SV_TARGET
 
 	// Combine the final light color with the texture color.
     color = color * textureColor;
-
-	if(lightIntensity > 0.0f)
-    {
-		// Sample the pixel from the specular map texture.
-        specularIntensity = shaderTexture3.Sample(SampleType, input.tex);
-
-		// Calculate the reflection vector based on the light intensity, normal vector, and light direction.
-        reflection = normalize(2 * lightIntensity * bumpNormal - lightDir); 
-
-        // Determine the amount of specular light based on the reflection vector, viewing direction, and specular power.
-        specular = pow(saturate(dot(reflection, input.viewDirection)), specularPower);
-
-		// Use the specular map to determine the intensity of specular light at this pixel.
-        specular = specular * specularIntensity;
-		
-        // Add the specular component last to the output color.
-        color = saturate(color + specular);
-    }
 
     return color;
 }
